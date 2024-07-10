@@ -16,6 +16,8 @@ $ torchrun --nproc_per_node=8 --nnodes=2 --node_rank=1 --master_addr=123.456.123
 (If your cluster does not have Infiniband interconnect prepend NCCL_IB_DISABLE=1)
 """
 
+from torch.nn.functional import cross_entropy
+
 import os
 import time
 import math
@@ -38,7 +40,7 @@ log_interval = 1
 eval_iters = 200
 eval_only = False # if True, script exits right after the first eval
 always_save_checkpoint = True # if True, always save a checkpoint after each eval
-init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
+init_from = 'resume' # 'scratch' or 'resume' or 'gpt2*'
 # wandb logging
 wandb_log = False # disabled by default
 wandb_project = 'owt'
@@ -299,6 +301,15 @@ while True:
         with ctx:
             logits, loss = model(X, Y)
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
+
+            # Calculate accuracy--> A measure of how often the model predicts the next character in the sequence
+            preds = torch.argmax(logits, dim=-1) # Obtain the predicted character indices using the logits(raw character predictions)
+            correct = (preds == Y).float() # Obtain the number of correctly predicted character indices based on matching our predictions to the actual character indices
+            accuracy = correct.sum() / len(Y) # Calculate accuracy by determining how many correct character indices were predicted relative to the actual character indices
+
+            # Calculate perplexity --> A measure of how well the model's probability distribution predicts the sample distribution
+            perplexity = torch.exp(loss)
+
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
         X, Y = get_batch('train')
         # backward pass, with gradient scaling if training in fp16
@@ -324,7 +335,8 @@ while True:
         if local_iter_num >= 5: # let the training loop settle a bit
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
-        print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+        print(f"iter {iter_num}: loss {lossf:.4f}, accuracy {accuracy:.4f}, perplexity {perplexity:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+
     iter_num += 1
     local_iter_num += 1
 
