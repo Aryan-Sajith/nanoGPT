@@ -1,6 +1,7 @@
 # Character level RNN small language model on tinyStories dataset 
 
 Original Dataset License: [CDLA-Sharing-1.0](https://spdx.org/licenses/CDLA-Sharing-1.0.html)
+- Original dataset obtained from https://huggingface.co/datasets/roneneldan/TinyStories
 - All dataset variations in this directory created in .txt and .bin forms are under the same license as the original dataset. 
 
 The baseline dataset used to train a character-level rnn language model.
