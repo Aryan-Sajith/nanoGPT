@@ -7,6 +7,8 @@ __pycache__/
 *.pkl
 *.pt
 *.pyc
-input.txt
 env/
 venv/
+# Ignore dataset variations for tinyStories --> Obtained via running the appropriate script on the base .txt generated dataset file
+*.txt
+*.bin
