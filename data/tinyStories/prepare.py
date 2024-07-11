@@ -8,8 +8,8 @@ train_dataset = load_dataset("roneneldan/TinyStories", split="train")
 val_dataset = load_dataset("roneneldan/TinyStories", split="validation")
 
 # convert the datasets to strings
-train_data = ' '.join([str(item) for item in train_dataset['text']])
-val_data = ' '.join([str(item) for item in val_dataset['text']])
+train_data = '\n---\n'.join([str(item) for item in train_dataset['text']])
+val_data = '\n---\n'.join([str(item) for item in val_dataset['text']])
 
 # save the datasets to .txt files
 with open('train.txt', 'w') as f:
