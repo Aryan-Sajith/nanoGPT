@@ -16,4 +16,3 @@ General Steps to Train:
 3. Modify re-encode.py to encode the modified train file into the train.bin file
 4. Re-run the main train.py file and modify the train_tinyStories.py file based on whatever run-specific changes you desire.
     - Change the write_output if you wish for another output file for this specific run.
-    - 
