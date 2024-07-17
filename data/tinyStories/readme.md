@@ -16,3 +16,7 @@ General Steps to Train:
 3. Update re-encode.py's training_file_to_encode to encode the new train file into the train.bin file
 4. Update config/train_tinyStories.py based for new train file:
     - Change the write_output if you wish for another output file for this specific run in the train_tinyStories.py configurator.
+5. Finally, to train run:
+```sh
+python train.py config/train_tinyStories.py
+```
