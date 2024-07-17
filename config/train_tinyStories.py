@@ -1,9 +1,9 @@
 # train a miniature character-level tinyStories model
 # good for debugging and playing on macbooks and such
 
-out_dir = 'out-tinyStories-25percentsize-25percentdup' # UPDATE THIS for new model checkpoint
+out_dir = 'out-tinyStories-100size-0dup' # UPDATE THIS for new model checkpoint
 eval_interval = 50 # keep frequent because we'll overfit
-eval_iters = 200
+eval_iters = 100
 log_interval = 10 # don't print too too often
 
 # we expect to overfit on this small dataset, so only save when val improves
@@ -25,8 +25,8 @@ n_embd = 128
 dropout = 0
 
 learning_rate = 1e-3 # with baby networks can afford to go a bit higher
-max_iters = 1000
-lr_decay_iters = 1000 # make equal to max_iters usually
+max_iters = 500
+lr_decay_iters = 500 # make equal to max_iters usually
 min_lr = 1e-4 # learning_rate / 10 usually
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 
