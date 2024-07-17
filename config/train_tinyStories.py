@@ -1,8 +1,8 @@
 # train a miniature character-level tinyStories model
 # good for debugging and playing on macbooks and such
 
-out_dir = 'out-tinyStories-25percent'
-eval_interval = 250 # keep frequent because we'll overfit
+out_dir = 'out-tinyStories-25percentsize-25percentdup'
+eval_interval = 50 # keep frequent because we'll overfit
 eval_iters = 200
 log_interval = 10 # don't print too too often
 
@@ -33,5 +33,5 @@ beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 warmup_iters = 100 # not super necessary potentially
 
 # on macbook also add
-# device = 'mps'  # run on cpu only
-# compile = False # do not torch compile the model
+device = 'mps'  # run on cpu only
+compile = False # do not torch compile the model

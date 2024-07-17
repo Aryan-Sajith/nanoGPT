@@ -213,21 +213,39 @@ if compile:
 if ddp:
     model = DDP(model, device_ids=[ddp_local_rank])
 
-# helps estimate an arbitrarily accurate loss over either split using many batches
+# helps estimate an arbitrarily accurate loss, accuracy, and perplexity over either split using many batches
 @torch.no_grad()
-def estimate_loss():
+def estimate_metrics():
     out = {}
     model.eval()
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
+        accuracies = torch.zeros(eval_iters)
+        perplexities = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch(split)
             with ctx:
                 logits, loss = model(X, Y)
             losses[k] = loss.item()
-        out[split] = losses.mean()
+
+            # Calculate accuracy
+            preds = torch.argmax(logits, dim=-1)
+            correct = (preds == Y).float()
+            accuracy = correct.sum() / len(Y)
+            accuracies[k] = accuracy.item()
+
+            # Calculate perplexity
+            perplexity = torch.exp(loss)
+            perplexities[k] = perplexity.item()
+
+        out[split] = {
+            'loss': losses.mean(),
+            'accuracy': accuracies.mean(),
+            'perplexity': perplexities.mean()
+        }
     model.train()
     return out
+
 
 # learning rate decay scheduler (cosine with warmup)
 def get_lr(it):
@@ -264,31 +282,23 @@ while True:
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-    # evaluate the loss on train/val sets and write checkpoints
-    if iter_num % eval_interval == 0 and master_process:
-        losses = estimate_loss()
-        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+    # evaluate the metrics on train/val sets and write checkpoints
+    if iter_num % eval_interval == 0 and master_process: # Changed from eval_interval to 10
+        metrics = estimate_metrics()
+        print(f"step {iter_num}: train loss {metrics['train']['loss']:.4f}, val loss {metrics['val']['loss']:.4f}, val accuracy {metrics['val']['accuracy']:.4f}, val perplexity {metrics['val']['perplexity']:.4f}")
+        output_file.write(f"step {iter_num}: train loss {metrics['train']['loss']:.4f}, val loss {metrics['val']['loss']:.4f}, val accuracy {metrics['val']['accuracy']:.4f}, val perplexity {metrics['val']['perplexity']:.4f}\n")
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
-                "train/loss": losses['train'],
-                "val/loss": losses['val'],
+                "train/loss": metrics['train']['loss'],
+                "val/loss": metrics['val']['loss'],
+                "val/accuracy": metrics['val']['accuracy'],
+                "val/perplexity": metrics['val']['perplexity'],
                 "lr": lr,
                 "mfu": running_mfu*100, # convert to percentage
             })
-        if losses['val'] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses['val']
-            if iter_num > 0:
-                checkpoint = {
-                    'model': raw_model.state_dict(),
-                    'optimizer': optimizer.state_dict(),
-                    'model_args': model_args,
-                    'iter_num': iter_num,
-                    'best_val_loss': best_val_loss,
-                    'config': config,
-                }
-                print(f"saving checkpoint to {out_dir}")
-                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+        if metrics['val']['loss'] < best_val_loss:
+            best_val_loss = metrics['val']['loss']
     if iter_num == 0 and eval_only:
         break
 
@@ -305,14 +315,6 @@ while True:
             logits, loss = model(X, Y)
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
 
-            # Calculate accuracy--> A measure of how often the model predicts the next character in the sequence
-            preds = torch.argmax(logits, dim=-1) # Obtain the predicted character indices using the logits(raw character predictions)
-            correct = (preds == Y).float() # Obtain the number of correctly predicted character indices based on matching our predictions to the actual character indices
-            accuracy = correct.sum() / len(Y) # Calculate accuracy by determining how many correct character indices were predicted relative to the actual character indices
-
-            # Calculate perplexity --> A measure of how well the model's probability distribution predicts the sample distribution
-            perplexity = torch.exp(loss)
-
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
         X, Y = get_batch('train')
         # backward pass, with gradient scaling if training in fp16
@@ -327,25 +329,22 @@ while True:
     # flush the gradients as soon as we can, no need for this memory anymore
     optimizer.zero_grad(set_to_none=True)
 
-    # timing and logging
-    t1 = time.time()
-    dt = t1 - t0
-    t0 = t1
-    if iter_num % log_interval == 0 and master_process:
-        # get loss as float. note: this is a CPU-GPU sync point
-        # scale up to undo the division above, approximating the true total loss (exact would have been a sum)
-        lossf = loss.item() * gradient_accumulation_steps
-        if local_iter_num >= 5: # let the training loop settle a bit
-            mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
-            running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
-        print(f"iter {iter_num}: loss {lossf:.4f}, accuracy {accuracy:.4f}, perplexity {perplexity:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
-        output_file.write(f"iter {iter_num}: loss {lossf:.4f}, accuracy {accuracy:.4f}, perplexity {perplexity:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%\n")
-
     iter_num += 1
     local_iter_num += 1
 
     # termination conditions
     if iter_num > max_iters:
+        # Save the checkpoint at the end of training
+        checkpoint = {
+            'model': raw_model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'model_args': model_args,
+            'iter_num': iter_num,
+            'best_val_loss': best_val_loss,
+            'config': config,
+        }
+        print(f"saving checkpoint to {out_dir}")
+        torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
         break
 
 output_file.close()

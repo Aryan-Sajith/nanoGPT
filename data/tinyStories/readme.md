@@ -15,4 +15,4 @@ General Steps to Train:
 2. Run the specific prepare-*.py program you want to obtain the variation of the tinyStories dataset you desire
 3. Modify re-encode.py to encode the modified train file into the train.bin file
 4. Re-run the main train.py file and modify the train_tinyStories.py file based on whatever run-specific changes you desire.
-    - Change the write_output if you wish for another output file for this specific run.
+    - Change the write_output if you wish for another output file for this specific run in the train_tinyStories.py configurator.
