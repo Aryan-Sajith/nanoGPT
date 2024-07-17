@@ -2,8 +2,11 @@ import os
 import tiktoken
 import numpy as np
 
+
+training_file_to_encode = '25percentdup-25percentsize.txt' 
+
 # load the data
-with open('25percentdup-25percentsize.txt', 'r') as f:
+with open(training_file_to_encode, 'r') as f:
     train_data = f.read()
 
 # encode with tiktoken gpt2 bpe

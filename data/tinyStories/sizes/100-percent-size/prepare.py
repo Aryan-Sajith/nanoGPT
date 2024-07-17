@@ -12,9 +12,12 @@ train_data = '\n---\n'.join([str(item) for item in train_dataset['text']])
 val_data = '\n---\n'.join([str(item) for item in val_dataset['text']])
 
 # save the datasets to .txt files
-with open('train.txt', 'w') as f:
+baseline_training_txt = 'train.txt'
+validation_txt = 'val.txt'
+
+with open(baseline_training_txt, 'w') as f:
     f.write(train_data)
-with open('val.txt', 'w') as f:
+with open(validation_txt, 'w') as f:
     f.write(val_data)
 
 

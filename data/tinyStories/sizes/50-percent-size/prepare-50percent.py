@@ -11,9 +11,12 @@ needed_stories = total_stories // 2  # Divide by 2 to obtain 50%
 selected_stories = set(random.sample([i for i in range(total_stories)], needed_stories)) # Convert to set to optimize story_id inclusion check
 story_id = 0
 story_is_selected = story_id in selected_stories
+baseline_training_txt = "train.txt"
+output_training_txt = "fifty-percent-train.txt"
 
-with open("train.txt", "r") as input, \
-     open("fifty-percent-train.txt", "w") as output:
+
+with open(baseline_training_txt, "r") as input, \
+     open(output_training_txt, "w") as output:
     for line in input:
         if line.startswith("---"): # Stories are separated using ---
             story_id += 1

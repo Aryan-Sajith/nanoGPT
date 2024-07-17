@@ -11,8 +11,8 @@ After running `prepare.py`:
 - val.bin has 4,741,881 tokens
 
 General Steps to Train:
-1. Use the base prepare.py program to obtain the primary tinyStories train.txt file if you don't already have it.
-2. Run the specific prepare-*.py program you want to obtain the variation of the tinyStories dataset you desire
-3. Modify re-encode.py to encode the modified train file into the train.bin file
-4. Re-run the main train.py file and modify the train_tinyStories.py file based on whatever run-specific changes you desire.
+1. Use the base data/tinyStories/sizes/100-percent-size/prepare.py program to obtain the primary tinyStories train.txt file if you don't already have it.
+2. Run a prepare-*.py program to obtain the variation of the tinyStories dataset you desire from the sizes/
+3. Update re-encode.py's training_file_to_encode to encode the new train file into the train.bin file
+4. Update config/train_tinyStories.py based for new train file:
     - Change the write_output if you wish for another output file for this specific run in the train_tinyStories.py configurator.
