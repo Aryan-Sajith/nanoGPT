@@ -24,14 +24,14 @@ story_indices.remove(duplicate_story_index)
 selected_indices = set(random.sample(story_indices, num_duplicates)) # Set used to optimize member inclusion check later
 
 # Read the duplicate story
-random_story_txt = "random_story.txt"
+random_story_txt = "data/tinyStories/choose-random-story/chosen-random-story.txt"
 
 with open(random_story_txt, 'r') as f:
     duplicate_story = f.read().split('Story number')[0].strip()
 
 # Read from the baseline_training_txt to produce the output_training txt with appropriate level of duplication
-baseline_training_txt = "twenty-five-percent-train.txt"
-output_training_txt = "dup25-size25-train.txt"
+baseline_training_txt = "data/tinyStories/sizes/25-percent-size/twenty-five-percent-train.txt"
+output_training_txt = "data/tinyStories/sizes/25-percent-size/dup-25-percent/size25-dup25.txt"
 story_separator = "\n---\n"
 with open(baseline_training_txt, 'r') as f_in, open(output_training_txt, 'w') as f_out:
     stories = f_in.read().split(story_separator)
