@@ -2,7 +2,7 @@ import os
 import tiktoken
 import numpy as np
 
-training_file_to_encode = 'data/tinyStories/sizes/25-percent-size/dup-75-percent/size25-dup75.txt' 
+training_file_to_encode = 'data/tinyStories/sizes/25-percent-size/dup-100-percent/size25-dup100.txt' 
 
 # create a generator that yields lines from the file
 def read_in_chunks(file_path):
