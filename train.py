@@ -267,7 +267,7 @@ if wandb_log and master_process:
     wandb.init(project=wandb_project, name=wandb_run_name, config=config)
 
 # output file to store data for this training session
-output_file = open("data/tinyStories/outputs/100-percent-size/100size-50dup.txt", "w")
+output_file = open("data/tinyStories/outputs/100-percent-size/100size-75dup.txt", "w")
 
 # training loop
 X, Y = get_batch('train') # fetch the very first batch
