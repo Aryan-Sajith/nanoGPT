@@ -1,7 +1,7 @@
 # train a miniature character-level tinyStories model
 # good for debugging and playing on macbooks and such
 
-out_dir = 'out-tinyStories-100size-25dup' # UPDATE THIS for new model checkpoint
+out_dir = 'out-tinyStories-100size-50dup' # UPDATE THIS for new model checkpoint
 eval_interval = 50 # keep frequent because we'll overfit
 eval_iters = 100
 log_interval = 10 # don't print too too often
