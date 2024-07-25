@@ -14,6 +14,6 @@
 - Sum =	598.3909
 - Mean =	39.8927267
 - Median =	48.2553
-- Mode = Everything
+- Mode = All occur once
 - Standard Deviation =	17.0139599
 - Variance =	289.47483
